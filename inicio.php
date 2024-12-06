@@ -2,6 +2,11 @@
 
 include "controlador/controlador_login.php";
 
+if (!isset($_SESSION["id"])){
+    header("location: login.php");
+
+}
+
 
 ?>
 
@@ -123,10 +128,9 @@ include "controlador/controlador_login.php";
                 <h2>Agregar Procedimiento</h2>
                 <form method="POST" action="controlador/controlador_CRUD.php" id="agregarProcedimientos">
                     <input type="hidden" name="form_type" value="agregar_procedimientos">
-                    <input type="hidden" name="origen" value="inicio"> <!-- O "admin" dependiendo de dónde provenga -->
 
-                    <label for="ID_procedimiento">ID procedimiento:</label>
-                    <input type="text" name="ID_procedimiento" id="agregar-ID_procedimiento" required> <!-- Cambiado a ID_procedimiento -->
+                    <label for="ID">ID procedimiento:</label>
+                    <input type="text" name="ID" id="agregar-ID_procedimiento" required> <!-- Cambiado a ID_procedimiento -->
 
                     <label for="descripcion_procedimiento">Descripción del procedimiento:</label>
                     <input type="text" name="descripcion_procedimiento" id="agregar-descripcion_procedimiento" required> <!-- Cambiado a descripcion_procedimiento -->
@@ -134,15 +138,16 @@ include "controlador/controlador_login.php";
                     <label for="fecha_procedimiento">Fecha del procedimiento:</label>
                     <input type="date" name="fecha_procedimiento" id="agregar-fecha_procedimiento" required> <!-- Asegúrate de que este nombre sea correcto -->
 
-                    <label for="FK_equipo">Equipo:</label>
-                    <input type="text" name="FK_equipo" id="agregar-FK_equipo" required>
+                    <label for="equipo">Equipo:</label>
+                    <input type="text" name="equipo" id="agregar-FK_equipo" required>
 
-                    <label for="documento_tecnico">Técnico:</label>
-                    <input type="text" name="documento_tecnico" id="agregar-documento_tecnico" required>
+                    <label for="tecnico">Técnico:</label>
+                    <input type="text" name="tecnico" id="agregar-documento_tecnico" required>
 
                     <button type="submit" class="btn">Confirmar cambios</button>
                 </form>
             </section>
+
 
             <div id="tabla-registros-procedimientos" style="display: none;">
                 <h2>Lista de procedimientos</h2>
@@ -160,16 +165,16 @@ include "controlador/controlador_login.php";
                     <tbody>
                         <?php
                         if ($proeceidmentos) {
-                            while ($computador = $proeceidmentos->fetch_object()) { // recorre los resultados
+                            while ($poce = $proeceidmentos->fetch_object()) { // recorre los resultados
                         ?>
                                 <tr>
-                                    <td><?php echo $computador->ID_procedimentos; ?></td>
-                                    <td><?php echo $computador->descripcion_procedimiento; ?></td>
-                                    <td><?php echo $computador->fecha_procedimento; ?></td>
-                                    <td><?php echo $computador->FK_equipo; ?></td>
-                                    <td><?php echo $computador->FK_tecnico; ?></td>
+                                    <td><?php echo $poce->ID; ?></td>
+                                    <td><?php echo $poce->descripcion_procedimiento; ?></td>
+                                    <td><?php echo $poce->fecha_procedimento; ?></td>
+                                    <td><?php echo $poce->equipo; ?></td>
+                                    <td><?php echo $poce->tecnico; ?></td>
                                     <td>
-                                        <button class="btnmodificar">Modificar</button>
+                                        <button name ="botnmodificar"class="btnmodificar" onclick="tecnico_editar_procedimiento('<?php echo $poce->ID; ?>', '<?php echo $poce->descripcion_procedimiento; ?>', '<?php echo $poce->fecha_procedimento; ?>', '<?php echo $poce->equipo; ?>', '<?php echo $poce->tecnico; ?>')">Modificar</button>
                                         <button class="btneliminar">Eliminar</button>
                                     </td>
 
@@ -180,6 +185,7 @@ include "controlador/controlador_login.php";
                         }
                         ?>
                     </tbody>
+                    
                 </table>
             </div>
 
@@ -214,6 +220,31 @@ include "controlador/controlador_login.php";
                     <button type="button" class="btn_cancelar" onclick="formularioCancelar('tecnico-equipo')">Cancelar cambios</button>
                 </form>
             </div>
+
+             <!--formulario para editita prcedimentos -->
+            <div id='tabla-modificacion-precedimeintos' style="display: none;">
+                <form action="controlador/controlador_CRUD.php" method="POST" id="tecnico-precedimentoModificacion">
+                    <input type="hidden" name="form_type" value="tecnico-modificar-procedimentos">
+                    <input type="hidden" name="ID" id="editar-ID">
+
+                    <label for="descripcion_procedimiento">Descripcion procedimiento :</label>
+                    <input type="text" name="descripcion_procedimiento" id="editar-descripcion">
+                    <br>
+                    <label for="fecha_procedimento">Fecha procedimiento :</label>
+                    <input type="date" name="fecha_procedimiento" id="editar-fecha">
+                    <br>
+                    <label for="equipo">equipo :</label>
+                    <input type="text" name="equipo" id="editar-equipo">
+                    <br>
+                    <label for="tecnico">tecnico :</label>
+                    <input type="text" name="tecnico" id="editar-tecnico">
+                    <br>
+                   
+                    <button type="submit" class="btn">Confirmar cambios</button>
+                    <button type="button" class="btn_cancelar" onclick="formularioCancelar('procedimiento')">Cancelar cambios</button>
+                </form>
+            </div>
+
 
         </main>
     </div>
