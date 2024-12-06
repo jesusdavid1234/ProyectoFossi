@@ -1,5 +1,12 @@
 <?php
 include "controlador/controlador_login.php"; // Incluir el controlador donde se hacen las consultas
+
+if (!isset($_SESSION["id"])){
+    header("location: login.php");
+
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -122,16 +129,18 @@ include "controlador/controlador_login.php"; // Incluir el controlador donde se 
                         <th>tecnico</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     <?php while ($proce = $proeceidmentos->fetch_object()) { ?>
                         <tr>
-                            <td><?php echo $proce->ID_procedimientos; ?></td>
+                            <td><?php echo $proce->ID; ?></td>
                             <td><?php echo $proce->descripcion_procedimiento; ?></td>
                             <td><?php echo $proce->fecha_procedimento; ?></td>
-                            <td><?php echo $proce->FK_equipo; ?></td>
-                            <td><?php echo $proce->FK_tecnico; ?></td>
+                            <td><?php echo $proce->equipo; ?></td>
+                            <td><?php echo $proce->tecnico; ?></td>
                             <td>
-                                <button class="btn modificar" onclick="editarRegistro_procedimiento('<?php echo $proce->ID_procedimientos; ?>', '<?php echo $proce->descripcion_procedimiento; ?>', '<?php echo $proce->fecha_procedimento; ?>', '<?php echo $proce->FK_equipo; ?>', '<?php echo $proce->FK_tecnico; ?>')">Modificar</button>
+                                <button name="botnmodificar" class="botnmodificar" onclick="admin_editar_procedimiento('<?php echo $proce->ID; ?>', '<?php echo $proce->descripcion_procedimiento; ?>', '<?php echo $proce->fecha_procedimento; ?>', '<?php echo $proce->equipo; ?>', '<?php echo $proce->tecnico; ?>')">Modificar</button>
+
                                 <button class="btn eliminar" onclick="eliminarRegistro('<?php echo $proce->ID; ?>', 'procedimiento')">Eliminar</button>
                             </td>
                         </tr>
@@ -139,6 +148,7 @@ include "controlador/controlador_login.php"; // Incluir el controlador donde se 
                     <?php } ?>
 
                 </tbody>
+               
 
             </table>
 
@@ -200,29 +210,29 @@ include "controlador/controlador_login.php"; // Incluir el controlador donde se 
         </div>
 
         <!-- FORMULARIO DE MODIFICACION PARA PROCEDIMIENTOS -->
-        <div id="tabla-modificacion-procedimientos" style="display: none;">
+        <div id='tabla-modificacion-procedimientos-admin' style="display: none;">
             <form action="controlador/controlador_CRUD.php" method="POST" id="procedimientosModificacion">
-                <input type="hidden" name="form_type" value="modificar_procedimientos">
+                <input type="hidden" name="form_type" value="modificar_procedimientos_admin">
+                <input type="hidden" name="ID" id="editar-ID_procedimientos">
 
-                <label for="ID_procedimientos">ID del Procedimiento:</label>
-                <input type="text" name="ID_procedimientos" id="editar-ID_procedimientos" required>
+                <label for="descripcion_procedimiento">Ficha:</label>
+                <input type="text" name="descripcion_procedimiento" id="editar-descripcion">
                 <br>
-                <label for="descripcion_procedimiento">Descripcion del procedimiento:</label>
-                <input type="text" name="descripcion_procedimiento" id="editar-descripcion_procedimiento">
+                <label for="fecha_procedimiento">Nombre procedimiento:</label>
+                <input type="date" name="fecha_procedimiento" id="editar-fecha">
                 <br>
-                <label for="fecha_procedimiento">Fecha del procedimiento:</label>
-                <input type="date" name="fecha_procedimiento" id="editar-fecha_procedimiento">
+                <label for="equipo">Foranea equipo:</label>
+                <input type="text" name="equipo" id="editar-equipo">
                 <br>
-                <label for="FK_equipo">Foranea equipo:</label>
-                <input type="text" name="FK_equipo" id="editar-FK_equipo">
-                <br>
-                <label for="FK_tecnico">Foranea tecnico:</label>
-                <input type="text" name="FK_tecnico" id="editar-FK_tecnico">
+                <label for="tecnico">Foranea tecnico:</label>
+                <input type="text" name="tecnico" id="editar-tecnico">
                 <br>
                 <button type="submit" class="btn">Confirmar cambios</button>
                 <button type="button" class="btn_cancelar" onclick="formularioCancelar('procedimiento')">Cancelar cambios</button>
             </form>
         </div>
+
+       
 
     </div>
 
