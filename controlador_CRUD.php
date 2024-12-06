@@ -4,6 +4,29 @@ include("../modelo/conexion.php");
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $form_type = $_POST['form_type'];
 
+    //modificacion de procedimientos admin
+    if ($form_type == 'modificar_procedimientos_admin'){
+        $ID = $_POST['ID'];
+        $descripcion_procedimiento = $_POST['descripcion_procedimiento'];
+        $fecha_procedimiento = $_POST['fecha_procedimiento'];
+        $equipo = $_POST['equipo'];
+        $tecnico =$_POST['tecnico'];
+        $consulta = "UPDATE  procedimientos set descripcion_procedimiento=?, fecha_procedimento=?, equipo=?, tecnico=? WHERE ID=?";
+        $stmconsu = $conexion->prepare($consulta);
+        $stmconsu->bind_param("ssssi", $descripcion_procedimiento , $fecha_procedimiento , $equipo , $tecnico , $ID);
+        if ($stmconsu->execute()){
+            header("Location: ../admin_inicio.php");
+            exit;
+
+
+        } else{
+            echo "hubo un error a la hora de actualizar los datos" . $conexion->error;
+        }
+
+        
+    }
+
+
     // MODIFICACION PARA EQUIPOS PARA "controlador_CRUD.php"
 
     // MODIFICACION EQUIPOS admin
@@ -135,78 +158,82 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->close();
     }
 
-    // MODIFCICACION PROCEDIMIENTOS admin 
-    if ($form_type == 'modificar_procedimientos') {
-
-        $ID_procedimientos = $_POST['ID_procedimientos']; 
+    
+    //agregar procdedimento
+    if ($form_type == 'agregar_procedimientos'){
+        $ID = $_POST['ID'];
         $descripcion_procedimiento = $_POST['descripcion_procedimiento'];
         $fecha_procedimiento = $_POST['fecha_procedimiento'];
-        $FK_equipo = $_POST['FK_equipo'];
-        $FK_tecnico = $_POST['FK_tecnico'];
+        $equipo = $_POST['equipo'];
+        $tecnico = $_POST['tecnico'];
+
+        //validar si el id ya existe
+        $proce="SELECT * FROM procedimientos WHERE ID= ?";
+        $stmproce= $conexion ->prepare($proce); //aqui prepeared me esta permitiendo que no haiga una inyeccion de la aconsulta 
+        $stmproce -> bind_param("s", $ID);
+        $stmproce -> execute();
+        $final_proce= $stmproce ->get_result();
+
+        if ($final_proce -> num_rows >0){
+            echo "El ID del prcedimiento ya existe, ingrese otro";
 
 
-        $query = "UPDATE procedimientos SET descripcion_procedimiento = ?, fecha_procedimento = ?, FK_equipo = ?, FK_tecnico = ? WHERE ID_procedimientos = ?";
-        $stmt = $conexion->prepare($query);
+        }else{
+            $valida_tecnico= "SELECT * FROM tecnicos WHERE documento= ?";
+            $stemvalida= $conexion -> prepare($valida_tecnico);
+            $stemvalida -> bind_param("s", $tecnico);
+            $stemvalida -> execute();
+            $vali_final= $stemvalida ->get_result();
 
-        if ($stmt === false) {
-            die("Error en la preparación de la consulta: " . $conexion->error);
+            if ($vali_final->num_rows ==0){
+                echo "el documento del tecnico no existe, ingrese un tecnico valido";
+
+            }else{
+                $inserproce = "INSERT INTO procedimientos(ID,descripcion_procedimiento,fecha_procedimento,equipo,tecnico)VALUES(?,?,?,?,?)";
+                $istminser= $conexion ->prepare($inserproce);
+                $istminser -> bind_param("sssss", $ID , $descripcion_procedimiento , $fecha_procedimiento , $equipo , $tecnico);
+                if ($istminser -> execute()){
+                    header("Location: ../inicio.php");
+                    exit;
+                    
+                }else{
+                    echo"error al algregar el procedimento" . $conexion -> error;
+                }
+
+
+            }
+
+
+
         }
 
-        $stmt->bind_param("sssii", $descripcion_procedimiento, $fecha_procedimiento, $FK_equipo, $FK_tecnico, $ID_procedimientos);
 
-        if ($stmt->execute()) {
-            $query = "SELECT * FROM procedimientos WHERE ID_procedimientos = ?";
-            $stmtSelect = $conexion->prepare($query);
-            $stmtSelect->bind_param("i", $ID_procedimientos);
-            $stmtSelect->execute();
-            $result = $stmt ->get_result();
-            $procedimientoActualizado = $result->fetch_assoc();
 
-            echo json_encode($procedimientoActualizado);
+
+    }else if($form_type =='tecnico-modificar-procedimentos'){
+        $ID = $_POST['ID'];
+        $descripcion_procedimiento = $_POST['descripcion_procedimiento'];
+        $fecha_procedimiento = $_POST['fecha_procedimiento'];
+        $equipo = $_POST['equipo'];
+        $tecnico = $_POST['tecnico'];
+        $consulta_modi = "UPDATE  procedimientos set descripcion_procedimiento=?, fecha_procedimento=?, equipo=?, tecnico=? WHERE ID=?";
+        $consufi= $conexion -> prepare($consulta_modi);
+        $consufi ->bind_param("ssssi", $descripcion_procedimiento , $fecha_procedimiento , $equipo , $tecnico , $ID);
+
+        if ($consufi -> execute()){
+            header("Location: ../inicio.php");
             exit;
-        } else {
-            echo "Ocurrió un error al modificar el registro: " . $conexion->error;
+
+        }else{
+            echo "error a la hora de modificar procedimientos" .$conexion -> error; 
         }
-
-        $stmt->close();
-
-        //AGREGAR PROCEDIMIENTOS tecnico
-    } else if ($form_type == 'agregar_procedimientos') {
-        $id_procedimientos = $_POST['ID_procedimiento'];
-        $descripcion_procedimiento = $_POST['descripcion_procedimiento'];
-        $fecha_procedimiento = $_POST['fecha_procedimiento'];
-        $fk_equipo = $_POST['FK_equipo'];
-        $fk_tecnico = $_POST['documento_tecnico'];
-
-        $checkQuery = "SELECT * FROM procedimientos WHERE ID_procedimentos = ?";
-        $stmtCheck = $conexion->prepare($checkQuery);
-        $stmtCheck->bind_param("s", $id_procedimientos);
-        $stmtCheck->execute();
-        $resultCheck = $stmtCheck->get_result();
-
-        if ($resultCheck->num_rows > 0) {
-            echo "El ID de procedimiento ya existe. Por favor, elige un ID único.";
-        } else {
-            $insertQuery = "INSERT INTO procedimientos (ID_procedimentos, descripcion_procedimiento, fecha_procedimento, FK_equipo, FK_tecnico) 
-                            VALUES (?, ?, ?, ?, ?)";
-            $stmtInsert = $conexion->prepare($insertQuery);
-
-            if (!$stmtInsert) {
-                die("Error en la preparación de la consulta: " . $conexion->error);
-            }
-
-            $stmtInsert->bind_param("sssss", $id_procedimientos, $descripcion_procedimiento, $fecha_procedimiento, $fk_equipo, $fk_tecnico);
-
-            if ($stmtInsert->execute()) {
-                echo "Procedimiento agregado exitosamente.";
-                header("Location: ../inicio.php");
-                exit;
-            } else {
-                echo "Error al agregar el procedimiento: " . $conexion->error;
-            }
-        }
+        $consufi -> close();
     }
 
+   
+
+
+    
     // ELIMINACION DE EQUIPOS admin y tecnico
     if ($form_type == 'eliminar_equipo') {
         $ID_equipo = $_POST['ID_equipo'];
