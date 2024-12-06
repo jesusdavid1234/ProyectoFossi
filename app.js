@@ -67,119 +67,7 @@ function mostrar_procedimentos() {
     document.getElementById('tabla-procedimentos').style.display = 'block';
 }
 
-function manejarEnvioFormulario(formId) {
-    document.getElementById(formId).onsubmit = function(event) {
-        event.preventDefault();
 
-        const formData = new FormData(this); 
-
-        fetch('controlador/controlador_CRUD.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error en la respuesta del servidor');
-            }
-            return response.json();
-        })
-        .then(response => response.json()) 
-        .then(data => {
-            if (data) {
-                alert("¡Modificación exitosa!");
-
-                if (formId === 'equiposModificacion') {
-                    actualizarTablaEquipos(data);
-                } else if (formId === 'tecnicosModificacion') {
-                    actualizarTablaTecnicos(data);
-                } else if (formId === 'procedimientosModificacion') {
-                    actualizarTablaProcedimientos(data);
-                }
-
-                document.getElementById('tabla-modificacion-equipos').style.display = 'none';
-                document.getElementById('tabla-modificacion-tecnicos').style.display = 'none';
-                document.getElementById('tabla-modificacion-procedimientos').style.display = 'none';
-            }
-        })
-        .catch(error => {
-            console.log('Error', error);
-            alert("Ocurrió un error al intentar modificar el registro.");
-        });
-    };
-}
-
-function actualizarTablaEquipos(equipo) {
-    const tbody = document.querySelector('#tabla-registros tbody');
-    const existingRow = tbody.querySelector(`tr[data-id="${equipo.ID_equipo}"]`);
-
-    const row = `<tr data-id="${equipo.ID_equipo}">
-        <td>${equipo.ID_equipo}</td>
-        <td>${equipo.tipo_equipo}</td>
-        <td>${equipo.marca}</td>
-        <td>${equipo.estado_equipo}</td>
-        <td>${equipo.fecha_ingreso}</td>
-        <td>${equipo.fecha_entrega}</td>
-        <td>${equipo.observaciones}</td>
-        <td>${equipo.documento_tecnico}</td>
-        <td>${equipo.sede}</td>
-        <td>
-            <button class="btn modificar" onclick="editarRegistro_equipos('${equipo.ID_equipo}', '${equipo.marca}', '${equipo.estado_equipo}', '${equipo.fecha_ingreso}', '${equipo.fecha_entrega}', '${equipo.observaciones}', '${equipo.sede}')">Modificar</button>
-            <button class="btn eliminar" onclick="eliminarRegistro('${equipo.ID_equipo}', 'equipo')">Eliminar</button>
-        </td>
-    </tr>`;
-
-    if (existingRow) {
-        existingRow.innerHTML = row; 
-    } else {
-        tbody.innerHTML += row; 
-    }
-}
-
-function actualizarTablaTecnicos(tecnico) {
-    const tbody = document.querySelector('#tabla-usuarios tbody');
-    const existingRow = tbody.querySelector(`tr[data-documento="${tecnico.documento}"]`);
-
-    const row = `<tr data-documento="${tecnico.documento}">
-        <td>${tecnico.documento}</td>
-        <td>${tecnico.nombre_tecnico}</td>
-        <td>${tecnico.ficha}</td>
-        <td>${tecnico.FK_usuario}</td>
-        <td>${tecnico.sede}</td>
-        <td>
-            <button class="btn modificar" onclick="editarRegistro_tecnicos('${tecnico.documento}', '${tecnico.ficha}', '${tecnico.nombre_tecnico}', '${tecnico.FK_usuario}', '${tecnico.sede}')">Modificar</button>
-            <button class="btn eliminar" onclick="eliminarRegistro('${tecnico.documento}', 'tecnico')">Eliminar</button>
-        </td>
-    </tr>`;
-
-    if (existingRow) {
-        existingRow.innerHTML = row; 
-    } else {
-        tbody.innerHTML += row; 
-    }
-}
-
-function actualizarTablaProcedimientos(procedimiento) {
-    const tbody = document.querySelector('#tabla-procedimientos tbody');
-    const existingRow = tbody.querySelector(`tr[data-id="${procedimiento.ID_procedimientos}"]`);
-
-    const row = `<tr data-id="${procedimiento.ID_procedimientos}">
-        <td>${procedimiento.ID_procedimientos}</td>
-        <td>${procedimiento.descripcion_procedimiento}</td>
-        <td>${procedimiento.fecha_procedimiento}</td>
-        <td>${procedimiento.FK_equipo}</td>
-        <td>${procedimiento.FK_tecnico}</td>
-        <td>
-            <button class="btn modificar" onclick="editarRegistro_procedimiento('${procedimiento.ID_procedimientos}', '${procedimiento.descripcion_procedimiento}', '${procedimiento.fecha_procedimiento}', '${procedimiento.FK_equipo}', '${procedimiento.FK_tecnico}')">Modificar</button>
-            <button class="btn eliminar" onclick="eliminarRegistro('${procedimiento.ID_procedimientos}', 'procedimiento')">Eliminar</button>
-        </td>
-    </tr>`;
-
-    if (existingRow) {
-        existingRow.innerHTML = row; 
-    } else {
-        tbody.innerHTML += row; 
-    }
-}
 
 // EDICIONES DE LAS TABLAS admin
 function editarRegistro_equipos(ID_equipo, marca, estado_equipo, fecha_ingreso, fecha_entrega, observaciones, sede) {
@@ -204,21 +92,21 @@ function editarRegistro_tecnicos(documento, ficha, nombre_tecnico, FK_usuario, s
     document.getElementById('tabla-modificacion-tecnicos').style.display = 'block';
 }
 
-function editarRegistro_procedimiento(ID_procedimientos, descripcion_procedimiento, fecha_procedimiento, FK_equipo, FK_tecnico) {
-    document.getElementById('editar-ID_procedimientos').value = ID_procedimientos; 
-    document.getElementById('editar-descripcion_procedimiento').value = descripcion_procedimiento;
-    document.getElementById('editar-fecha_procedimiento').value = fecha_procedimiento;
-    document.getElementById('editar-FK_equipo').value = FK_equipo;
-    document.getElementById('editar-FK_tecnico').value = FK_tecnico;
+function admin_editar_procedimiento(ID, descripcion_procedimiento, fecha_procedimiento, equipo, tecnico) {
+    // Asigna los valores recibidos en los campos del formulario
+    document.getElementById('editar-ID_procedimientos').value = ID; // Usa 'editar-ID_procedimientos' en lugar de 'editar-ID'
+    document.getElementById('editar-descripcion').value = descripcion_procedimiento;
+    
+    // Asegúrate de que la fecha esté en el formato 'YYYY-MM-DD' para el input tipo date
+    let fechaFormateada = new Date(fecha_procedimiento).toISOString().split('T')[0]; 
+    document.getElementById('editar-fecha').value = fechaFormateada;
 
-    document.getElementById('tabla-modificacion-procedimientos').style.display = 'block';
+    document.getElementById('editar-equipo').value = equipo;
+    document.getElementById('editar-tecnico').value = tecnico;
+
+    // Muestra el formulario de modificación
+    document.getElementById('tabla-modificacion-procedimientos-admin').style.display = 'block';
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-    manejarEnvioFormulario('equiposModificacion');
-    manejarEnvioFormulario('tecnicosModificacion');
-    manejarEnvioFormulario('procedimientosModificacion');
-});
 
 // ELIMINACION DE REGISTROS EN LAS TABLAS admin y tecnico
 function eliminarRegistro(id, tipo, origen) {
@@ -227,7 +115,7 @@ function eliminarRegistro(id, tipo, origen) {
                    'eliminar_procedimiento'; 
     let idField = tipo === 'equipo' ? 'ID_equipo=' + id : 
                   tipo === 'tecnico' ? 'documento=' + id : 
-                  'ID_procedimiento=' + id; 
+                  'ID=' + id; 
 
     if (confirm("¿Estás seguro de que deseas eliminar este registro?")) {
         fetch('controlador/controlador_CRUD.php', {
@@ -268,13 +156,31 @@ function tecnicos_editarRegistro_equipos(ID_equipo, marca, estado_equipo, fecha_
     document.getElementById('tabla-modificacion-registros').style.display = 'block';
 }
 
-function tecnicos_agregarProcedimientos(ID_procedimientos, descripcion_procedimiento, fecha_procedimiento, FK_equipo, FK_tecnico) {
-    document.getElementById('agregar-ID_procedimiento'). value = ID_procedimientos;
+
+function tecnicos_agregarProcedimientos(ID, descripcion_procedimiento, fecha_procedimiento,equipo, tecnico) {
+    document.getElementById('agregar-ID_procedimiento'). value = ID;
     document.getElementById('agregar-descripcion_procedimiento').value = descripcion_procedimiento;
     document.getElementById('agregar-fecha_procedimiento').value = fecha_procedimiento;
-    document.getElementById('agregar-FK_equipo').value = FK_equipo;
-    document.getElementById('agregar-documento_tecnico').value = FK_tecnico;
+    document.getElementById('agregar-FK_equipo').value = equipo;
+    document.getElementById('agregar-documento_tecnico').value =tecnico;
 }
+
+function tecnico_editar_procedimiento(ID, descripcion_procedimiento, fecha_procedimiento, equipo, tecnico) {
+    // Asigna los valores recibidos en los campos del formulario
+    document.getElementById('editar-ID').value = ID;
+    document.getElementById('editar-descripcion').value = descripcion_procedimiento;
+    
+    // Asegúrate de que la fecha esté en el formato 'YYYY-MM-DD' para el input tipo date
+    let fechaFormateada = new Date(fecha_procedimiento).toISOString().split('T')[0]; 
+    document.getElementById('editar-fecha').value = fechaFormateada;
+
+    document.getElementById('editar-equipo').value = equipo;
+    document.getElementById('editar-tecnico').value = tecnico;
+    e
+    // Muestra el formulario d modificación
+    document.getElementById('tabla-modificacion-precedimeintos').style.display = 'block';
+}
+
 
 // FUNCION DEL BOTON "CANCELAR" EN LOS FORMULARIOS DE MODIFICACION admin y tecnico
 function formularioCancelar(tipo) {
@@ -287,7 +193,8 @@ function formularioCancelar(tipo) {
         mostrarUsuarios(); 
 
     } else if (tipo === 'procedimiento') {
-        document.getElementById('tabla-modificacion-procedimientos').style.display = 'none';
+        // Ocultamos el formulario de modificación
+        document.getElementById('tabla-modificacion-precedimeintos').style.display = 'none';
         mostrar_procedimentos();
 
     } else if (tipo === 'tecnico-equipo') {
